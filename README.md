@@ -1,5 +1,7 @@
 # QQ群年度报告分析器
 
+> 📌 **本项目基于 [QQgroup-annual-report-analyzer](https://github.com/ZiHuixi/QQgroup-annual-report-analyzer) 二次开发**，在原项目基础上新增了互动关系网络、群聊CP分析、气氛担当、语言指纹、时间脉搏等分析维度，重构了 UI 样式为原神清新风格（1080px 宽幅排版），并优化了图片导出、停用词过滤、统计口径说明等功能。向原作者致敬。
+
 QQ 群聊天记录分析工具，生成精美的年度总结报告。原神清新风格，1080px 宽幅排版，支持一键导出分享长图。
 
 #### ❗请注意本项目代码基于vibe coding开发，ai含量高，请酌情使用。
@@ -348,8 +350,8 @@ AGPL-3.0 License
 
 ## 📮 联系方式
 
-- GitHub: [@ZiHuixi](https://github.com/ZiHuixi) & [@Jingkun Yu](https://github.com/yujingkun1)
-- 项目地址: https://github.com/ZiHuixi/QQgroup-annual-report-analyzer
+- **原项目**：[QQgroup-annual-report-analyzer](https://github.com/ZiHuixi/QQgroup-annual-report-analyzer) by [@ZiHuixi](https://github.com/ZiHuixi) & [@Jingkun Yu](https://github.com/yujingkun1)
+- **本仓库**：https://github.com/qingyang-o/group-pulse
 
 
 
