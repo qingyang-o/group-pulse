@@ -22,7 +22,7 @@ QQ 群聊天记录分析工具，生成精美的年度总结报告。原神清�
 - 📝 **统计口径透明**：每个模块附口径说明，报告末尾附完整统计解释
 - 🤖 **AI 智能点评**：集成 OpenAI API，提供 AI 年度总结（可选）
 - 🎯 **交互式选词**：Web 界面支持从热词列表中自主选择展示词汇，未配AI时自动用前10热词
-- 💾 **数据持久化**：支持 JSON 文件或 MySQL 数据库存储
+- 💾 **数据持久化**：JSON 文件存储，报告自动保存可随时回看
 - 📜 **历史记录管理**：随时查看、搜索、删除历史报告
 - ⚙️ **高度可定制**：丰富的配置参数，满足不同需求
 
@@ -39,11 +39,7 @@ QQ 群聊天记录分析工具，生成精美的年度总结报告。原神清�
 2. **Node.js 16+** （必需）
    - 下载：[nodejs.org](https://nodejs.org/)
 
-3. **MySQL 5.7+** （可选）
-   - 下载：[mysql.com](https://dev.mysql.com/downloads/mysql/)
-   - ⚡ 默认使用 JSON 文件存储，**无需安装 MySQL**
-
-4. **qq-chat-exporter** （必需）
+3. **qq-chat-exporter** （必需）
    - 下载：[qq-chat-exporter](https://github.com/shuakami/qq-chat-exporter)
    - 使用该项目导出 QQ 群聊天记录为 JSON
 
@@ -55,7 +51,7 @@ QQ 群聊天记录分析工具，生成精美的年度总结报告。原神清�
 
 1. 双击运行 `start.bat`
 2. 脚本会自动创建配置文件并提示你配置
-3. 编辑配置文件（默认配置即可用，无需 MySQL）
+3. 编辑配置文件（默认配置即可用）
 4. 再次运行 `start.bat` 即可启动
 
 **后续运行：**
@@ -64,8 +60,6 @@ QQ 群聊天记录分析工具，生成精美的年度总结报告。原神清�
 
 #### macOS / Linux 用户
 mac默认可能5000端口被占用的话换一个端口
-
-**方式 A：手动启动前后端**
 
 1. **启动后端**（新开一个终端）：
    ```bash
@@ -86,27 +80,12 @@ mac默认可能5000端口被占用的话换一个端口
    - 编辑 `frontend/vite.config.js`
    - 修改 `proxy.target` 为实际后端地址（如 `http://localhost:5001`）
 
-**方式 B：使用 Docker 部署**
-
-详见 [DOCKER.md](DOCKER.md) 文件，或执行：
-
-```bash
-# 构建并启动
-docker-compose up -d --build
-
-# 查看日志
-docker-compose logs -f
-
-# 访问 http://localhost:5001
-```
-
 ### ✅ 第3步：访问应用
 
 启动成功后，浏览器访问：
 
 - **前端界面**：http://localhost:5173
 - **后端API**：http://localhost:5000（或你配置的端口）
-- **Docker 部署**：http://localhost:5001
 
 就是这么简单！🎉
 
@@ -117,7 +96,7 @@ docker-compose logs -f
 ### backend/.env（Web 模式配置）
 
 ```env
-# 存储模式（默认使用 JSON 文件存储，无需 MySQL）
+# 存储模式：JSON 文件存储，无需数据库
 STORAGE_MODE=json
 
 # Flask 配置
@@ -134,44 +113,22 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-3.5-turbo
 ```
 
-**存储模式说明：**
+**数据存储说明：**
 
-- `STORAGE_MODE=json`（默认）：
-  - ✅ 无需安装 MySQL
-  - ✅ 数据存储在 `runtime_outputs/reports_db/` 目录
-  - ✅ 适合个人本地使用
-  
-- `STORAGE_MODE=mysql`（可选）：
-  - 适合多用户环境或生产部署
-  - 需要安装 MySQL 并配置：
-    ```env
-    MYSQL_HOST=localhost
-    MYSQL_PORT=3306
-    MYSQL_USER=root
-    MYSQL_PASSWORD=your_password
-    MYSQL_DATABASE=qq_reports
-    ```
-
-### config.py（命令行模式配置，可选）
-
-仅在使用命令行模式（`python main.py`）时需要配置。大多数用户使用 Web 模式即可。
+- 数据存储在 `runtime_outputs/reports_db/` 目录
+- 每个报告一个 JSON 文件，自动创建索引
+- 适合个人本地使用，易于备份和迁移
 
 ## 📖 使用方式
 
-本项目提供两种使用方式：
-
-### 方式一：Web 界面模式（推荐）⭐
-
 通过浏览器访问可视化界面，提供最友好的交互体验。
-
-**使用步骤：**
 
 **Windows 用户：**
 1. 双击运行 `start.bat` 启动服务
 2. 浏览器访问 http://localhost:5173
 3. 上传 QQ 群聊天记录 JSON 文件
-4. 选择想要展示的热词
-5. 生成并查看精美报告
+4. 选择想要展示的热词（未配AI时自动用前10热词）
+5. 生成并查看精美报告，可一键导出分享长图
 
 **macOS / Linux 用户：**
 1. 按照"第2步"中的说明启动前后端服务
@@ -179,60 +136,6 @@ OPENAI_MODEL=gpt-3.5-turbo
 3. 上传 QQ 群聊天记录 JSON 文件
 4. 选择想要展示的热词
 5. 生成并查看精美报告
-
-### 方式二：命令行模式（高级用户）
-
-直接通过终端运行分析脚本，适合批量处理或自动化场景。
-
-
-**使用步骤：**
-
-1. 准备聊天记录
-
-2. 编辑 `config.py`：
-   ```python
-   INPUT_FILE = "path/to/your/chat.json"
-   ```
-
-3. 运行分析：
-   ```bash
-   python main.py
-   ```
-
-4. 查看结果：生成的报告在 `runtime_outputs` 目录
-
-### 方式三：Docker 部署（推荐用于生产环境）
-
-适合想要一键部署或部署到服务器的用户。
-
-**使用步骤：**
-
-1. **确保已安装 Docker 和 Docker Compose**
-   - macOS: `brew install --cask docker`
-   - Linux: 参考 [Docker 官方文档](https://docs.docker.com/get-docker/)
-
-2. **构建并启动容器**：
-   ```bash
-   docker-compose up -d --build
-   ```
-
-3. **访问应用**：
-   - 浏览器访问：http://localhost:5001
-
-4. **查看日志**：
-   ```bash
-   docker-compose logs -f
-   ```
-
-5. **停止服务**：
-   ```bash
-   docker-compose down
-   ```
-
-**注意事项：**
-- 首次构建需要下载依赖，可能需要 5-10 分钟
-- 如果端口 5001 被占用，可修改 `docker-compose.yml` 中的端口映射
-- 详细说明请参考 [DOCKER.md](DOCKER.md)
 
 ## 📊 生成的报告包含
 
@@ -253,46 +156,36 @@ OPENAI_MODEL=gpt-3.5-turbo
 - **后端**：Flask, Python 3.8+
 - **前端**：Vue 3, Vite
 - **分析引擎**：jieba（中文分词）
+- **可视化**：Canvas 力导向图、CSS 图表
 - **图片生成**：Playwright
-- **数据存储**：JSON 文件 / MySQL（可选）
+- **数据存储**：JSON 文件
 - **AI 功能**：OpenAI API（可选）
 
 ## 💾 数据存储
 
-### JSON 文件存储（默认，推荐）
+采用 JSON 文件存储：
 
 - 数据保存在 `runtime_outputs/reports_db/` 目录
 - 每个报告一个 JSON 文件
 - 自动创建索引文件用于快速查询
-- 易于备份和迁移
-
-### MySQL 数据库存储（可选）
-
-- 适合多用户环境
-- 支持高效查询
-- 需要额外配置
+- 图片缓存在 `runtime_outputs/reports_db/images/` 目录
+- 易于备份和迁移（直接拷贝目录即可）
 
 ## 📁 项目结构
 
 ```
-QQgroup-annual-report-analyzer/
+group-pulse/
 ├── start.bat              # 一键启动脚本（Windows）
 ├── README.md              # 本文档
-├── config.example.py      # 命令行模式配置模板
-├── main.py                # 命令行模式入口
-├── requirements.txt       # Python 依赖（命令行模式）
 ├── analyzer.py            # 分析核心逻辑（含停用词、互动图谱、口头禅等）
-├── report_generator.py    # 报告生成器
 ├── image_generator.py     # 图片导出功能（Playwright 截图）
 ├── utils.py               # 工具函数（时间戳解析、JSON加载）
 ├── logger.py              # 日志模块
 ├── backend/               # Web 后端
 │   ├── app.py            # Flask 应用（含图片生成、缓存、样式版本号）
-│   ├── db_service.py     # MySQL 数据库服务
 │   ├── json_storage.py   # JSON 文件存储服务
-│   ├── init_db.py        # 数据库初始化
 │   ├── .env.example      # 环境变量模板
-│   └── requirements.txt  # Python 依赖（Web 模式）
+│   └── requirements.txt  # Python 依赖
 ├── frontend/              # Web 前端
 │   ├── src/
 │   │   ├── App.vue       # 主应用（上传/历史列表）
@@ -308,28 +201,24 @@ QQgroup-annual-report-analyzer/
 │   └── vite.config.js    # Vite 配置
 └── templates/             # HTML 导出模板
     ├── report_template.html   # 导出用 HTML 模板（原神清新风格）
-    ├── assets/           # 导出模板装饰图片
-    ├── TEMPLATE_DEVELOPMENT_GUIDE.md
-    └── TEMPLATE_IMAGE_CUSTOMIZATION.md
+    └── assets/           # 导出模板装饰图片
 ```
 
 ## 🎯 使用建议
 
 1. **首次使用**
-   - 推荐使用 Web 模式（更直观）
-   - 默认配置即可使用，无需复杂设置
-   - 如需 AI 功能，配置 OpenAI API Key
+   - 双击 `start.bat` 启动，默认配置即可使用
+   - 如需 AI 功能，配置 OpenAI API Key；未配置时自动用前10热词
 
 2. **日常使用**
    - **Windows**：双击 `start.bat` 启动
-   - **macOS/Linux**：手动启动前后端或使用 Docker
-   - 在浏览器中上传聊天记录
+   - **macOS/Linux**：手动启动前后端
+   - 在浏览器中上传聊天记录，生成报告
    - 关闭服务窗口即停止服务
 
-3. **高级用法**
-   - 使用命令行模式批量处理
-   - 自定义分析参数（编辑 `config.py`）
-   - 部署到服务器供多人使用
+3. **导出分享**
+   - 报告页左下角点击"生成图片分享"，导出 1080px 宽高清长图
+   - 样式修改后会自动使缓存失效（样式版本号机制）
 
 ## 🤝 贡献
 
