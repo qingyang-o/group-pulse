@@ -117,7 +117,7 @@ BLACKLIST = set([
 # ============================================
 
 # 各类排行榜显示的前 N 名
-RANK_TOP_N = 10
+RANK_TOP_N = 15
 
 # 热词贡献者显示的前 N 名
 CONTRIBUTOR_TOP_N = 10

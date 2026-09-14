@@ -889,15 +889,20 @@
         }
         
         /* ========== 口头禅 ========== */
+        .pet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px 12px;
+        }
         .pet-item {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px dashed rgba(212,224,237,0.5);
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(212,224,237,0.4);
         }
         
-        .pet-item:last-child {
+        .pet-item:nth-last-child(-n+2) {
             border-bottom: none;
         }
         
@@ -1430,7 +1435,8 @@
                     <img class="card-decor" src="assets/04545C1731436C7D0F1AA8EB73C27436.jpg" alt="口头禅装饰">
                     <div class="new-card-title">💬 口头禅</div>
                 <div class="card-desc">个人高频词按次数×个人占比排序，已过滤通用词和群友名称</div>
-                    {% for p in pet_phrases[:5] %}
+                    <div class="pet-grid">
+                    {% for p in pet_phrases[:15] %}
                     <div class="pet-item">
                         <img class="pet-avatar" src="{{ p.avatar }}" onerror="this.style.display='none'">
                         <div class="pet-info">
@@ -1443,6 +1449,7 @@
                         </div>
                     </div>
                     {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
                 

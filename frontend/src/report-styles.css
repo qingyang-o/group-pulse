@@ -889,15 +889,21 @@ body {
 }
 
 /* ========== 口头禅 ========== */
-.pet-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px dashed rgba(212,224,237,0.5);
+.pet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px 12px;
 }
 
-.pet-item:last-child {
+.pet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(212,224,237,0.4);
+}
+
+.pet-item:nth-last-child(-n+2) {
   border-bottom: none;
 }
 

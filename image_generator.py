@@ -645,10 +645,10 @@ class ImageGenerator:
         # 单向奔赴
         one_sided = self.json_data.get('oneSided', [])
         
-        # 口头禅（取发言量Top10用户）
+        # 口头禅（取发言量Top15用户）
         pet_phrases_raw = self.json_data.get('petPhrases', {})
         rankings_data_all = self.json_data.get('rankings', {})
-        talkers = rankings_data_all.get('话痨榜', [])[:10]
+        talkers = rankings_data_all.get('话痨榜', [])[:15]
         pet_phrases = []
         for talker in talkers:
             uin = talker.get('uin', '')

@@ -284,12 +284,14 @@
             <img class="card-decor" :src="decorMaid" alt="口头禅装饰">
             <div class="new-card-title">💬 口头禅</div>
             <div class="card-desc">个人高频词按次数×个人占比排序，已过滤通用词和群友名称</div>
-            <div v-for="p in report.statistics.petPhrases.slice(0,5)" :key="p.uin" class="pet-item">
-              <img class="pet-avatar" :src="p.avatar" @error="handleImageError">
-              <div class="pet-info">
-                <div class="pet-name">{{ p.name }}</div>
-                <div class="pet-words">
-                  <span v-for="phrase in p.phrases" :key="phrase.word" class="pet-word">{{ phrase.word }}</span>
+            <div class="pet-grid">
+              <div v-for="p in report.statistics.petPhrases.slice(0,15)" :key="p.uin" class="pet-item">
+                <img class="pet-avatar" :src="p.avatar" @error="handleImageError">
+                <div class="pet-info">
+                  <div class="pet-name">{{ p.name }}</div>
+                  <div class="pet-words">
+                    <span v-for="phrase in p.phrases" :key="phrase.word" class="pet-word">{{ phrase.word }}</span>
+                  </div>
                 </div>
               </div>
             </div>

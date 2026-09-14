@@ -680,7 +680,7 @@ def generate_report_image(report_id):
             return jsonify({"error": "报告不存在"}), 404
         
         # 样式版本号：修改前端样式后递增此值，自动使旧缓存失效
-        STYLE_VERSION = 'v3'
+        STYLE_VERSION = 'v5'
         cache_key = f"{report_id}_{template_id}_{image_format}_{STYLE_VERSION}"
         if not force_regenerate:
             cached_image = db_service.get_cached_image(cache_key)
