@@ -1,0 +1,55 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.venv
+venv
+ENV
+env
+
+# Node
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 运行时文件
+runtime_outputs/*
+!runtime_outputs/.gitkeep
+*.log
+*.tmp
+
+# 测试和覆盖率
+.coverage
+htmlcov
+.pytest_cache
+
+# 配置文件（使用环境变量）
+config.py
+
+# 示例数据（可选，如果不想包含）
+*.json
+!package.json
+!package-lock.json
+
+# 其他
+README.md
+LICENSE
+start.bat
+
