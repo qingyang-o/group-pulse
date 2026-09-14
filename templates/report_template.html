@@ -286,8 +286,12 @@
             color: var(--text);
             margin-top: 10px;
             text-align: center;
-            word-break: break-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             max-width: 100%;
+            height: 18px;
+            line-height: 18px;
         }
         
         .bar-rank {
@@ -295,14 +299,18 @@
             color: var(--gold);
             font-weight: 700;
             margin-top: 2px;
+            height: 14px;
+            line-height: 14px;
         }
         
         .bar-contributors {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
             gap: 4px;
             margin-top: 8px;
+            height: 14px;
+            overflow: hidden;
         }
         
         .bar-contributor-item {
@@ -1524,7 +1532,7 @@
         <div class="footer">
             <img class="footer-decor" src="assets/A814FF35DECEF1A81FC1FE0FD3D8AB67.jpg" alt="页脚装饰">
             <div class="footer-text">
-                Github.com/ZiHuixi/QQgroup-annual-report-analyzer
+                Github.com/qingyang-o/group-pulse
             </div>
         </div>
         

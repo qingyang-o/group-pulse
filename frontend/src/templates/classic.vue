@@ -390,7 +390,7 @@
       <div class="footer">
         <img class="footer-decor" :src="decorChibi" alt="页脚装饰">
         <div class="footer-text">
-          Github.com/ZiHuixi/QQgroup-annual-report-analyzer
+          Github.com/qingyang-o/group-pulse
         </div>
       </div>
       

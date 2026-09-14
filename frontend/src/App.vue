@@ -28,14 +28,46 @@
       <!-- 步骤1: 上传文件 -->
       <div v-if="step === 1" class="card">
         <h2>QQ群年度报告分析器</h2>
-        <p>上传 <a href="https://github.com/shuakami/qq-chat-exporter">qq-chat-exporter</a> 导出的 JSON，系统将自动分析并生成年度报告</p>
+        <p>上传 <a href="https://github.com/shuakami/qq-chat-exporter" target="_blank">qq-chat-exporter</a> 导出的 JSON，系统将自动分析并生成年度报告</p>
+        
+        <!-- 数据导出指引 -->
+        <div class="export-guide">
+          <div class="export-guide-header" @click="showExportGuide = !showExportGuide">
+            <span class="export-guide-icon">📥</span>
+            <span class="export-guide-title">还没有聊天记录？点我查看导出方法</span>
+            <span class="export-guide-arrow" :class="{ rotated: showExportGuide }">▼</span>
+          </div>
+          <div v-if="showExportGuide" class="export-guide-content">
+            <div class="export-step">
+              <div class="export-step-num">1</div>
+              <div class="export-step-text">
+                <strong>下载 qq-chat-exporter</strong>
+                <p>前往 <a href="https://github.com/shuakami/qq-chat-exporter/releases" target="_blank">GitHub Releases</a> 下载最新版本</p>
+              </div>
+            </div>
+            <div class="export-step">
+              <div class="export-step-num">2</div>
+              <div class="export-step-text">
+                <strong>登录并导出群聊</strong>
+                <p>打开 qce，扫码登录 QQ，选择要分析的群，设置时间范围（建议一整年），导出为 JSON 格式</p>
+              </div>
+            </div>
+            <div class="export-step">
+              <div class="export-step-num">3</div>
+              <div class="export-step-text">
+                <strong>上传到本工具</strong>
+                <p>将导出的 JSON 文件在下方上传，即可生成年度报告</p>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <!-- 重要提示 -->
         <div class="notice-box">
           <h3>⚠️ 重要提示</h3>
           <ul>
             <li><strong>开发中项目：</strong>本项目仍在开发阶段，可能会出现未知错误或不稳定情况。</li>
-            <li><strong>演示站点限制：</strong>本站点仅供演示使用，设有较严格的限流设置。为获得更好体验，推荐前往 <a href="https://github.com/ZiHuixi/QQgroup-annual-report-analyzer" target="_blank">GitHub 仓库</a> 自行部署，或搭建类似网站供他人使用。</li>
+            <li><strong>项目地址：</strong>本项目基于 <a href="https://github.com/ZiHuixi/QQgroup-annual-report-analyzer" target="_blank">QQgroup-annual-report-analyzer</a> 二次开发，新增了互动关系网络、群聊CP、气氛担当等维度，源码仓库：<a href="https://github.com/qingyang-o/group-pulse" target="_blank">github.com/qingyang-o/group-pulse</a></li>
             <li><strong>数据安全提醒：</strong>虽然本项目采用 AGPL-3.0 开源协议，但上传的聊天记录属于敏感数据，仍存在一定泄露风险。请根据实际情况谨慎使用，建议仅上传不包含隐私信息的数据。</li>
           </ul>
         </div>
@@ -374,6 +406,7 @@ const loading = ref(false)
 const loadingMessage = ref('')
 const loadingReports = ref(false)
 const autoSelect = ref(false)  // 是否AI自动选词
+const showExportGuide = ref(false)  // 导出指引折叠状态
 
 // 时间范围设置
 const startDate = ref('')
@@ -1217,6 +1250,83 @@ input[type="file"]::file-selector-button {
 input[type="file"]::file-selector-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 数据导出指引 */
+.export-guide {
+  margin: 16px 0;
+  border: 1px solid #d4e4ed;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%);
+}
+.export-guide-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+.export-guide-header:hover {
+  background: rgba(255,255,255,0.5);
+}
+.export-guide-icon {
+  font-size: 20px;
+}
+.export-guide-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e6b;
+}
+.export-guide-arrow {
+  font-size: 12px;
+  color: #7a9bbf;
+  transition: transform 0.3s;
+}
+.export-guide-arrow.rotated {
+  transform: rotate(180deg);
+}
+.export-guide-content {
+  padding: 0 18px 16px;
+  border-top: 1px dashed #d4e4ed;
+}
+.export-step {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+.export-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5b9bd5, #7bc8a8);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.export-step-text strong {
+  font-size: 13px;
+  color: #2c3e6b;
+}
+.export-step-text p {
+  font-size: 12px;
+  color: #5a7a9a;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.export-step-text a {
+  color: #5b9bd5;
+  text-decoration: none;
+}
+.export-step-text a:hover {
+  text-decoration: underline;
 }
 
 /* 通知框美化 */
