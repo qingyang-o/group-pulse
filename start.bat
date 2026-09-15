@@ -46,15 +46,14 @@ if not exist "venv" (
     echo 创建Python虚拟环境...
     python -m venv venv
 )
-call venv\Scripts\activate.bat
 echo 安装Python依赖包（首次运行需要几分钟）...
-pip install -r backend\requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+venv\Scripts\pip.exe install -r backend\requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 if errorlevel 1 (
     echo ⚠️  清华源失败，尝试官方源...
-    pip install -r backend\requirements.txt
+    venv\Scripts\pip.exe install -r backend\requirements.txt
     if errorlevel 1 (
         echo ❌ Python依赖安装失败，请检查网络连接
-        echo 可尝试手动运行：pip install -r backend\requirements.txt
+        echo 可尝试手动运行：venv\Scripts\pip.exe install -r backend\requirements.txt
         pause
         exit /b 1
     )
@@ -64,10 +63,10 @@ echo ✅ Python依赖就绪
 :: ========== 5. Playwright浏览器 ==========
 echo.
 echo [5/7] 检查Playwright浏览器...
-python -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); p.chromium.launch(headless=True); p.stop()" >nul 2>&1
+venv\Scripts\python.exe -c "from playwright.sync_api import sync_playwright; p = sync_playwright().start(); p.chromium.launch(headless=True); p.stop()" >nul 2>&1
 if errorlevel 1 (
     echo ⚠️  首次运行，正在下载浏览器（约100MB，请耐心等待）...
-    playwright install chromium >nul 2>&1
+    venv\Scripts\playwright.exe install chromium
     if errorlevel 1 (
         echo ⚠️  浏览器下载失败，图片导出可能不可用（不影响报告查看）
     ) else (
@@ -102,7 +101,7 @@ echo ✅ 前端依赖就绪
 echo.
 echo [7/7] 启动服务...
 echo 正在启动后端...
-start "QQ群年度报告-后端" cmd /k "cd /d %CD% && venv\Scripts\activate.bat && python backend\app.py"
+start "QQ群年度报告-后端" cmd /k "cd /d %CD% && venv\Scripts\python.exe backend\app.py"
 
 :: 等待后端就绪
 echo 等待后端就绪...
