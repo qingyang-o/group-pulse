@@ -47,10 +47,17 @@ if not exist "venv" (
     python -m venv venv
 )
 call venv\Scripts\activate.bat
-pip install -r backend\requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple >nul 2>&1
+echo 安装Python依赖包（首次运行需要几分钟）...
+pip install -r backend\requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 if errorlevel 1 (
     echo ⚠️  清华源失败，尝试官方源...
-    pip install -r backend\requirements.txt >nul 2>&1
+    pip install -r backend\requirements.txt
+    if errorlevel 1 (
+        echo ❌ Python依赖安装失败，请检查网络连接
+        echo 可尝试手动运行：pip install -r backend\requirements.txt
+        pause
+        exit /b 1
+    )
 )
 echo ✅ Python依赖就绪
 
@@ -76,10 +83,10 @@ echo [6/7] 安装前端依赖...
 cd frontend
 if not exist "node_modules" (
     echo 安装前端依赖包（首次运行需要几分钟）...
-    call npm install --registry=https://registry.npmmirror.com >nul 2>&1
+    call npm install --registry=https://registry.npmmirror.com
     if errorlevel 1 (
         echo ⚠️  国内镜像失败，尝试官方源...
-        call npm install >nul 2>&1
+        call npm install
         if errorlevel 1 (
             cd ..
             echo ❌ 前端依赖安装失败，请检查网络
