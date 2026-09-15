@@ -1,6 +1,6 @@
-# 强制 bat 文件使用 CRLF 换行符，避免 Windows 下闪退
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# bat/cmd 文件禁止换行符转换，确保仓库内存储为 CRLF（GitHub zip 下载不做转换）
+*.bat -text
+*.cmd -text
 
 # Python 和前端文件使用 LF
 *.py text eol=lf
