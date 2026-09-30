@@ -9,7 +9,7 @@
         <div class="header-badge">Annual Report</div>
         <div class="header-star-group">★ ★ ★</div>
         <h1 :class="getTitleClass(report.chat_name)">{{ report.chat_name }}</h1>
-        <div class="subtitle">年度报告</div>
+        <div class="subtitle">{{ report.statistics?.period === 'month' ? '月度报告 · 按周统计' : '年度报告' }}</div>
         <div class="header-stats">
           <div class="stat-box">
             <div class="stat-value">{{ formatNumber(report.message_count) }}</div>
@@ -19,40 +19,6 @@
       </div>
       
       <div class="stripe-diagonal"></div>
-      
-      <!-- 柱状图 -->
-      <div class="chart-section">
-        <div class="section-header">
-          <div class="section-title">热词榜</div>
-        </div>
-        
-        <div class="bar-chart">
-          <div v-for="(word, index) in report.selected_words" :key="word.word" class="bar-item">
-            <div class="bar-value">{{ word.freq }}</div>
-            <div class="bar-wrapper">
-              <div class="bar" :style="{ height: word.bar_height + '%' }">
-                <div v-for="(seg, segIndex) in word.segments" :key="segIndex"
-                     class="bar-segment" 
-                     :style="{ height: seg.percent + '%', backgroundColor: seg.color }">
-                </div>
-              </div>
-            </div>
-            <div class="bar-label">{{ word.word }}</div>
-            <div class="bar-rank">#{{ index + 1 }}</div>
-            <div class="bar-contributors">
-              <div v-for="(item, itemIndex) in word.legend" :key="itemIndex"
-                   :class="['bar-contributor-item', { empty: !item.name }]">
-                <div class="bar-contributor-dot" :style="{ background: item.color }"></div>
-                <span class="bar-contributor-name">{{ item.name }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="divider">
-        <div class="divider-line"></div>
-      </div>
       
       <!-- 热词卡片 -->
       <div class="section">
@@ -155,32 +121,56 @@
             </div>
           </div>
           
-          <!-- 月度趋势 -->
-          <div v-if="report.statistics?.monthDistribution?.length" class="new-card">
-            <div class="new-card-title">📈 月度活跃趋势</div>
-            <div class="card-desc">按消息发送时间统计每月消息总数</div>
+          <!-- 月度趋势（年度模式）/ 周趋势（月度模式） -->
+          <div v-if="report.statistics?.period === 'month'
+               ? report.statistics?.weekDistribution?.length
+               : report.statistics?.monthDistribution?.length" class="new-card">
+            <div class="new-card-title">{{ report.statistics?.period === 'month' ? '📊 周活跃趋势' : '📈 月度活跃趋势' }}</div>
+            <div class="card-desc">{{ report.statistics?.period === 'month' ? '按消息发送时间统计当月每周消息总数' : '按消息发送时间统计每月消息总数' }}</div>
             <div class="month-chart">
-              <div v-for="m in report.statistics.monthDistribution" :key="m.month" class="month-bar-wrap">
-                <div class="month-bar-count">{{ m.count }}</div>
-                <div class="month-bar" :style="{ height: m.height + '%' }"></div>
-                <div class="month-bar-label">{{ m.month.slice(5) }}月</div>
-              </div>
+              <template v-if="report.statistics?.period === 'month'">
+                <div v-for="w in report.statistics.weekDistribution" :key="w.week" class="month-bar-wrap">
+                  <div class="month-bar-count">{{ w.count }}</div>
+                  <div class="month-bar" :style="{ height: w.height + '%' }"></div>
+                  <div class="month-bar-label">{{ w.weekLabel }}</div>
+                </div>
+              </template>
+              <template v-else>
+                <div v-for="m in report.statistics.monthDistribution" :key="m.month" class="month-bar-wrap">
+                  <div class="month-bar-count">{{ m.count }}</div>
+                  <div class="month-bar" :style="{ height: m.height + '%' }"></div>
+                  <div class="month-bar-label">{{ m.month.slice(5) }}月</div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
         
-        <!-- 年度大事件（全宽） -->
-        <div v-if="report.statistics?.dailyEvents?.length" class="new-card">
-          <div class="new-card-title">🔥 年度大事件</div>
-          <div class="card-desc">当日消息量超全年均值1.5倍标准差；热词按当日频次÷全年日均的突增度排序</div>
+        <!-- 年度大事件 / 周度大事件（全宽） -->
+        <div v-if="report.statistics?.period === 'month'
+             ? report.statistics?.weekEvents?.length
+             : report.statistics?.dailyEvents?.length" class="new-card">
+          <div class="new-card-title">{{ report.statistics?.period === 'month' ? '🔥 周度大事件' : '🔥 年度大事件' }}</div>
+          <div class="card-desc">{{ report.statistics?.period === 'month' ? '单周消息量超月内均值1.5倍标准差；热词按周内频次÷月均周的突增度排序' : '当日消息量超全年均值1.5倍标准差；热词按当日频次÷全年日均的突增度排序' }}</div>
           <div class="event-list">
-            <div v-for="e in report.statistics.dailyEvents" :key="e.date" class="event-item">
-              <div class="event-date">{{ e.date.slice(5) }}</div>
-              <div class="event-count">{{ e.count }}条</div>
-              <div class="event-words">
-                <span v-for="w in e.top_words" :key="w" class="event-word-tag">{{ w }}</span>
+            <template v-if="report.statistics?.period === 'month'">
+              <div v-for="e in report.statistics.weekEvents" :key="e.week" class="event-item">
+                <div class="event-date">第{{ e.week }}周</div>
+                <div class="event-count">{{ e.count }}条</div>
+                <div class="event-words">
+                  <span v-for="w in e.top_words" :key="w" class="event-word-tag">{{ w }}</span>
+                </div>
               </div>
-            </div>
+            </template>
+            <template v-else>
+              <div v-for="e in report.statistics.dailyEvents" :key="e.date" class="event-item">
+                <div class="event-date">{{ e.date.slice(5) }}</div>
+                <div class="event-count">{{ e.count }}条</div>
+                <div class="event-words">
+                  <span v-for="w in e.top_words" :key="w" class="event-word-tag">{{ w }}</span>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -274,54 +264,25 @@
         </div>
       </div>
       
-      <!-- 口头禅 & 标点狂魔 -->
-      <div v-if="report.statistics?.petPhrases?.length || report.statistics?.punctuationData" class="section new-section">
+      <!-- 口头禅 -->
+      <div v-if="report.statistics?.petPhrases?.length" class="section new-section">
         <div class="section-header">
           <div class="section-title">语言指纹</div>
         </div>
-        <div class="two-col">
-          <div v-if="report.statistics?.petPhrases?.length" class="new-card card-with-decor">
-            <img class="card-decor" :src="decorMaid" alt="口头禅装饰">
-            <div class="new-card-title">💬 口头禅</div>
-            <div class="card-desc">个人高频词按次数×个人占比排序，已过滤通用词和群友名称</div>
-            <div class="pet-grid">
-              <div v-for="p in report.statistics.petPhrases.slice(0,15)" :key="p.uin" class="pet-item">
-                <img class="pet-avatar" :src="p.avatar" @error="handleImageError">
-                <div class="pet-info">
-                  <div class="pet-name">{{ p.name }}</div>
-                  <div class="pet-words">
-                    <span v-for="phrase in p.phrases" :key="phrase.word" class="pet-word">{{ phrase.word }}</span>
-                  </div>
+        <div class="new-card card-with-decor">
+          <img class="card-decor" :src="decorMaid" alt="口头禅装饰">
+          <div class="new-card-title">💬 口头禅</div>
+          <div class="card-desc">个人高频词按次数×个人占比排序，已过滤通用词和群友名称</div>
+          <div class="pet-grid">
+            <div v-for="p in report.statistics.petPhrases.slice(0,15)" :key="p.uin" class="pet-item">
+              <img class="pet-avatar" :src="p.avatar" @error="handleImageError">
+              <div class="pet-info">
+                <div class="pet-name">{{ p.name }}</div>
+                <div class="pet-words">
+                  <span v-for="phrase in p.phrases" :key="phrase.word" class="pet-word">
+                    {{ phrase.word }}<span class="pet-word-count">×{{ phrase.count }}</span>
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="report.statistics?.punctuationData" class="new-card">
-            <div class="new-card-title">❗ 标点狂魔</div>
-            <div class="card-desc">感叹号/问号/省略号使用总数排行</div>
-            <div v-if="report.statistics.punctuationData.exclaim?.length" style="margin-bottom:10px;">
-              <div style="font-size:11px;color:var(--gold);margin-bottom:5px;font-weight:700;">感叹号 ❗</div>
-              <div v-for="p in report.statistics.punctuationData.exclaim.slice(0,3)" :key="'e'+p.uin" class="punct-row">
-                <div class="punct-icon">❗</div>
-                <div class="punct-name">{{ p.name }}</div>
-                <div class="punct-count">{{ p.value }}</div>
-              </div>
-            </div>
-            <div v-if="report.statistics.punctuationData.question?.length" style="margin-bottom:10px;">
-              <div style="font-size:11px;color:var(--gold);margin-bottom:5px;font-weight:700;">问号 ❓</div>
-              <div v-for="p in report.statistics.punctuationData.question.slice(0,3)" :key="'q'+p.uin" class="punct-row">
-                <div class="punct-icon">❓</div>
-                <div class="punct-name">{{ p.name }}</div>
-                <div class="punct-count">{{ p.value }}</div>
-              </div>
-            </div>
-            <div v-if="report.statistics.punctuationData.ellipsis?.length">
-              <div style="font-size:11px;color:var(--gold);margin-bottom:5px;font-weight:700;">省略号 💭</div>
-              <div v-for="p in report.statistics.punctuationData.ellipsis.slice(0,3)" :key="'l'+p.uin" class="punct-row">
-                <div class="punct-icon">💭</div>
-                <div class="punct-name">{{ p.name }}</div>
-                <div class="punct-count">{{ p.value }}</div>
               </div>
             </div>
           </div>
@@ -334,15 +295,17 @@
           <div class="section-title">统计说明</div>
         </div>
         <div class="stats-note-grid">
-          <div class="stats-note-item"><strong>月度活跃</strong>按消息发送时间（东八区）统计每月消息总数</div>
-          <div class="stats-note-item"><strong>年度大事件</strong>当日消息量超过「均值+1.5倍标准差」或「均值×1.5」（取大值）；热词按「当日出现次数÷全年日均次数」的突增度排序</div>
+          <div v-if="report.statistics?.period === 'month'" class="stats-note-item"><strong>周活跃</strong>按消息发送时间（东八区）统计当月每周（第1~5周）消息总数</div>
+          <div v-if="report.statistics?.period === 'month'" class="stats-note-item"><strong>周度大事件</strong>单周消息量超过「均值+1.5倍标准差」或「均值×1.5」（取大值）；热词按「周内出现次数÷月均周次数」的突增度排序</div>
+          <div v-if="report.statistics?.period !== 'month'" class="stats-note-item"><strong>月度活跃</strong>按消息发送时间（东八区）统计每月消息总数</div>
+          <div v-if="report.statistics?.period !== 'month'" class="stats-note-item"><strong>年度大事件</strong>当日消息量超过「均值+1.5倍标准差」或「均值×1.5」（取大值）；热词按「当日出现次数÷全年日均次数」的突增度排序</div>
           <div class="stats-note-item"><strong>关系网络</strong>节点大小=发言量，连线=回复+@互动次数，仅展示互动≥3次的关系对；力导向布局自动聚类</div>
           <div class="stats-note-item"><strong>最佳拍档</strong>两人之间互相回复+@的总互动次数最高的组合</div>
           <div class="stats-note-item"><strong>单向奔赴</strong>一方对另一方的互动次数≥另一方的3倍，且主动方互动≥10次；数值为「主动:被动」</div>
           <div class="stats-note-item"><strong>热场王</strong>每人每条发言后5分钟内、非本人的平均消息数；数值越高说明发言后群越活跃（需≥10条消息才参与排名）</div>
           <div class="stats-note-item"><strong>冷场王</strong>发言后5分钟内群内平均消息数最低的用户；发言后群容易冷场</div>
           <div class="stats-note-item"><strong>口头禅</strong>个人高频词按「使用次数×(个人占比+0.3)」综合排序，已过滤通用助词、代词和所有群友名称</div>
-          <div class="stats-note-item"><strong>标点狂魔</strong>感叹号「！!」、问号「？?」、省略号「……」的使用总数排行</div>
+
           <div class="stats-note-item"><strong>活跃时段</strong>按消息发送小时统计24小时分布，最高峰为消息量最多的小时区间</div>
         </div>
       </div>
@@ -462,7 +425,8 @@ const peakHourText = computed(() => {
 // 获取图片文件名
 const imageFileName = computed(() => {
   const chatName = props.report?.chat_name || '报告'
-  return `${chatName}_年度报告_${new Date().getTime()}.png`
+  const periodLabel = props.report?.statistics?.period === 'month' ? '月度报告' : '年度报告'
+  return `${chatName}_${periodLabel}_${new Date().getTime()}.png`
 })
 
 // 热场/冷场百分比

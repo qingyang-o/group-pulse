@@ -56,7 +56,9 @@ CHINESE_STOPWORDS = {
 }
 
 class ChatAnalyzer:
-    def __init__(self, data):
+    def __init__(self, data, period='year'):
+        """period: 'year' 年度报告（默认） / 'month' 月度报告（按周维度统计）"""
+        self.period = period
         self.data = data
         self.messages = data.get('messages', [])
         self.chat_name = data.get('chatName', data.get('chatInfo', {}).get('name', '未知群聊'))
@@ -88,6 +90,8 @@ class ChatAnalyzer:
         self.month_distribution = Counter()       # 月度消息量
         self.daily_distribution = Counter()       # 每日消息量 "YYYY-MM-DD" -> count
         self.daily_word_freq = defaultdict(Counter)  # 每日热词
+        self.week_distribution = Counter()            # 月度模式：当月第N周消息量
+        self.week_word_freq = defaultdict(Counter)    # 月度模式：当月第N周热词
         # 互动关系图：interaction_graph[sender_uin][target_uin] = 互动次数
         self.interaction_graph = defaultdict(Counter)
         self.uid_to_uin = {}                      # uid -> uin 映射
@@ -169,13 +173,22 @@ class ChatAnalyzer:
             logger.info(f"   原始消息: {original_count} 条, 过滤后: {filtered_count} 条")
 
     def _is_bot_message(self, msg):
-        """判断是否为机器人消息（基于 subMsgType）"""
+        """判断是否为机器人消息（基于 subMsgType 或昵称关键词）"""
         if not cfg.FILTER_BOT_MESSAGES:
             return False
         
         raw_msg = msg.get('rawMessage', {})
         sub_msg_type = raw_msg.get('subMsgType', 0)
-        return sub_msg_type in [577, 65]
+        if sub_msg_type in [577, 65]:
+            return True
+        
+        # 按昵称关键词识别机器人（如 QQ 群机器人 Ononoki 等）
+        sender = msg.get('sender', {})
+        name = (sender.get('name', '') or '').lower()
+        for keyword in getattr(cfg, 'BOT_NAME_KEYWORDS', []):
+            if keyword and keyword.lower() in name:
+                return True
+        return False
 
     def _build_mappings(self):
         # 构建 uin 到 name 的映射，优先保留有效的 name
@@ -266,6 +279,9 @@ class ChatAnalyzer:
         
         logger.info("📅 年度大事件分析...")
         self._compute_daily_events()
+        if self.period == 'month':
+            logger.info("📅 周度事件分析（月度模式）...")
+            self._compute_week_events()
         
         logger.info("💬 口头禅与标点分析...")
         self._compute_pet_phrases()
@@ -435,8 +451,11 @@ class ChatAnalyzer:
             # 解析日期用于日度词频
             day_key = None
             msg_dt = parse_datetime(msg.get('timestamp', ''))
+            week_key = None
             if msg_dt is not None:
                 day_key = msg_dt.strftime('%Y-%m-%d')
+                if self.period == 'month':
+                    week_key = (msg_dt.day - 1) // 7 + 1
             
             for word in all_tokens:
                 word = word.strip()
@@ -453,6 +472,8 @@ class ChatAnalyzer:
                     self.user_word_freq[sender_uin][word] += 1
                 if day_key and len(word) >= 2 and not is_emoji(word):
                     self.daily_word_freq[day_key][word] += 1
+                    if self.period == 'month' and week_key:
+                        self.week_word_freq[week_key][word] += 1
                 if len(self.word_samples[word]) < cfg.SAMPLE_COUNT * 3:
                     self.word_samples[word].append(cleaned)
 
@@ -549,6 +570,10 @@ class ChatAnalyzer:
                 day_key = msg_dt.strftime('%Y-%m-%d')
                 self.month_distribution[month_key] += 1
                 self.daily_distribution[day_key] += 1
+                # 月度模式：按当月第几周统计（第1~5周）
+                if self.period == 'month':
+                    week_no = (msg_dt.day - 1) // 7 + 1
+                    self.week_distribution[week_no] += 1
             
             # 标点统计（用原始文本）
             if text:
@@ -679,6 +704,43 @@ class ChatAnalyzer:
         events.sort(key=lambda x: x['count'], reverse=True)
         self.daily_events = events[:5]
 
+    def _compute_week_events(self):
+        """月度模式周度大事件：消息量突增的周 + 该周突增热词（按突增度排序）"""
+        if len(self.week_distribution) < 3:
+            self.week_events = []
+            return
+        counts = list(self.week_distribution.values())
+        mean = sum(counts) / len(counts)
+        std = (sum((c - mean) ** 2 for c in counts) / len(counts)) ** 0.5
+        threshold = max(mean + 1.5 * std, mean * 1.5)
+        total_weeks = len(self.week_distribution)
+
+        events = []
+        for week, count in self.week_distribution.items():
+            if count < threshold:
+                continue
+            week_words = self.week_word_freq.get(week, Counter())
+            scored = []
+            for word, week_count in week_words.items():
+                if word in CHINESE_STOPWORDS or word in cfg.BLACKLIST:
+                    continue
+                if len(word) < 2 or is_emoji(word):
+                    continue
+                global_count = self.word_freq.get(word, 0)
+                daily_avg = global_count / total_weeks if total_weeks > 0 else 0
+                boost = week_count / (daily_avg + 0.5)
+                scored.append((word, week_count, boost))
+            scored.sort(key=lambda x: x[2], reverse=True)
+            top_words = [w for w, _, _ in scored[:5]]
+            if top_words:
+                events.append({
+                    'week': week,
+                    'count': count,
+                    'top_words': top_words
+                })
+        events.sort(key=lambda x: x['count'], reverse=True)
+        self.week_events = events[:5]
+
     def _compute_pet_phrases(self):
         """口头禅：每人最高频的特色词汇（按使用次数 × 个人特色度加权排序）"""
         # 构建用户名过滤集合（所有历史昵称 + 撤回消息昵称 + jieba分词结果），避免用户名被统计为口头禅
@@ -720,7 +782,7 @@ class ChatAnalyzer:
             if candidates:
                 self.pet_phrases[uin] = [
                     {'word': w, 'count': c, 'ratio': round(r, 3)}
-                    for w, c, r, _ in candidates[:5]
+                    for w, c, r, _ in candidates[:6]
                 ]
 
     def _compute_punctuation_rankings(self):
@@ -920,6 +982,10 @@ class ChatAnalyzer:
         
         # 年度大事件
         result['dailyEvents'] = getattr(self, 'daily_events', [])
+        # 月度模式：周分布 + 周度大事件
+        result['period'] = self.period
+        result['weekDistribution'] = dict(sorted(self.week_distribution.items()))
+        result['weekEvents'] = getattr(self, 'week_events', [])
         
         # 口头禅
         result['petPhrases'] = {

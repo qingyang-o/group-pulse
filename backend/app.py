@@ -315,6 +315,9 @@ def upload_and_analyze():
         safe_filename = file.filename
 
     auto_select = request.form.get("auto_select", "false").lower() == "true"
+    period = request.form.get('period', 'year')  # year=年度报告 / month=月度报告（按周统计）
+    if period not in ('year', 'month'):
+        period = 'year'
 
     start_date = request.form.get('start_date')
     end_date = request.form.get('end_date')
@@ -354,7 +357,7 @@ def upload_and_analyze():
     try:
         # 使用流式解析加载JSON（避免内存溢出）
         data = load_json(temp_path)
-        analyzer = analyzer_mod.ChatAnalyzer(data)
+        analyzer = analyzer_mod.ChatAnalyzer(data, period=period)
         analyzer.analyze()
         report = analyzer.export_json()
 
@@ -527,6 +530,9 @@ def finalize_report(report_id: str, analyzer, selected_words: List[str],
             "coldKing": report.get('coldKing', []),
             "petPhrases": report.get('petPhrases', {}),
             "punctuationRankings": report.get('punctuationRankings', {}),
+            "period": report.get('period', 'year'),
+            "weekDistribution": report.get('weekDistribution', {}),
+            "weekEvents": report.get('weekEvents', []),
         }
         
         success = db_service.create_report(
@@ -680,7 +686,7 @@ def generate_report_image(report_id):
             return jsonify({"error": "报告不存在"}), 404
         
         # 样式版本号：修改前端样式后递增此值，自动使旧缓存失效
-        STYLE_VERSION = 'v7'
+        STYLE_VERSION = 'v10'
         cache_key = f"{report_id}_{template_id}_{image_format}_{STYLE_VERSION}"
         if not force_regenerate:
             cached_image = db_service.get_cached_image(cache_key)
@@ -795,6 +801,9 @@ def process_report_data_for_frontend(report):
         'coldKing': report['statistics'].get('coldKing', []),
         'petPhrases': report['statistics'].get('petPhrases', {}),
         'punctuationRankings': report['statistics'].get('punctuationRankings', {}),
+        'period': report['statistics'].get('period', 'year'),
+        'weekDistribution': report['statistics'].get('weekDistribution', {}),
+        'weekEvents': report['statistics'].get('weekEvents', []),
     }
     
 
@@ -822,6 +831,9 @@ def process_report_data_for_frontend(report):
             "coldKing": template_data.get('cold_king', []),
             "petPhrases": template_data.get('pet_phrases', []),
             "punctuationData": template_data.get('punctuation_data', {}),
+            "period": template_data.get('period', 'year'),
+            "weekDistribution": template_data.get('week_data', []),
+            "weekEvents": template_data.get('week_events', []),
         },
         "peak_hour": template_data['peak_hour'],
         "created_at": str(report['created_at'])

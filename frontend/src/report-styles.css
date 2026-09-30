@@ -943,42 +943,28 @@ body {
 }
 
 .pet-word {
-  padding: 3px 10px;
+  flex: 0 0 calc(33.333% - 8px);
+  box-sizing: border-box;
+  padding: 3px 8px;
   background: linear-gradient(135deg, rgba(123,200,168,0.15), rgba(91,155,213,0.15));
   border-radius: 10px;
   font-size: 12px;
   color: var(--primary);
   font-weight: 500;
-}
-
-/* ========== 标点狂魔 ========== */
-.punct-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-}
-
-.punct-icon {
-  font-size: 16px;
-  width: 24px;
   text-align: center;
-}
-
-.punct-name {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.punct-count {
-  font-size: 14px;
+.pet-word-count {
+  font-size: 10px;
+  color: var(--gold);
   font-weight: 700;
-  color: var(--primary);
+  margin-left: 2px;
 }
+
+
 
 /* ========== 统计说明 ========== */
 .stats-note-section {

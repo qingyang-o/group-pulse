@@ -635,6 +635,22 @@ class ImageGenerator:
         # 年度大事件
         daily_events = self.json_data.get('dailyEvents', [])
         
+        # 报告周期（year/month）
+        period = self.json_data.get('period', 'year')
+        
+        # 月度模式：周活跃分布（当月第1~5周）
+        week_dist = self.json_data.get('weekDistribution', {})
+        week_data = []
+        if week_dist:
+            max_week = max(week_dist.values())
+            for week_no in sorted(week_dist.keys()):
+                count = week_dist[week_no]
+                height = max((count / max_week * 100) if max_week > 0 else 0, 3)
+                week_data.append({'week': week_no, 'weekLabel': f'第{week_no}周', 'count': count, 'height': height})
+        
+        # 月度模式：周度大事件
+        week_events = self.json_data.get('weekEvents', [])
+        
         # 热场王/冷场王
         heat_king = self.json_data.get('heatKing', [])
         cold_king = self.json_data.get('coldKing', [])
@@ -658,7 +674,7 @@ class ImageGenerator:
                     'name': talker.get('name', '未知'),
                     'uin': uin,
                     'avatar': get_avatar_url(uin),
-                    'phrases': phrases[:3]
+                    'phrases': phrases[:6]
                 })
         
         # 标点狂魔
@@ -681,6 +697,9 @@ class ImageGenerator:
             'peak_hour': peak_hour,
             'month_data': month_data,
             'daily_events': daily_events,
+            'period': period,
+            'week_data': week_data,
+            'week_events': week_events,
             'heat_king': heat_king,
             'cold_king': cold_king,
             'best_pairs': best_pairs,

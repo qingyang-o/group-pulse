@@ -73,7 +73,23 @@
         </div>
         
         <div class="card" style="margin-top: 20px;">
-          <h3>时间范围设置</h3>
+          <h3>报告周期与时间范围</h3>
+          <div class="mode-selector">
+            <label class="mode-option">
+              <input type="radio" v-model="period" value="year" />
+              <div class="mode-content">
+                <strong>📅 年度报告</strong>
+                <p>按全年聊天记录统计，展示月度活跃趋势与年度大事件</p>
+              </div>
+            </label>
+            <label class="mode-option">
+              <input type="radio" v-model="period" value="month" />
+              <div class="mode-content">
+                <strong>🗓️ 月度报告</strong>
+                <p>按一个自然月统计，以周为维度展示活跃趋势与周度大事件（切换后自动填入本月范围，可手动修改）</p>
+              </div>
+            </label>
+          </div>
           <div class="time-range-selector">
             <div class="time-input-group">
               <label>起始日期：</label>
@@ -92,7 +108,7 @@
               />
             </div>
           </div>
-          <p class="time-range-hint">💡 留空表示不限制该端时间，可以只设置起始或结束日期（建议直接在导出时设置时间范围）</p>
+          <p class="time-range-hint">💡 年度报告留空表示不限制时间；月度报告建议只保留一个月的数据（默认自动填本月1日~今天，可改成任意自然月）</p>
         </div>
 
         <div class="card" style="margin-top: 20px;">
@@ -327,7 +343,7 @@
 
 <script setup>
 import axios from 'axios'
-import { reactive, ref, computed, onMounted } from 'vue'
+import { reactive, ref, computed, watch, onMounted } from 'vue'
 import Report from './Report.vue'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api'
@@ -411,6 +427,18 @@ const showExportGuide = ref(false)  // 导出指引折叠状态
 // 时间范围设置
 const startDate = ref('')
 const endDate = ref('')
+const period = ref('year')  // 'year' 年度报告 / 'month' 月度报告
+
+// 切到月度报告时，自动填入本月1日~今天
+watch(period, (val) => {
+  if (val === 'month') {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    if (!startDate.value) startDate.value = fmt(firstDay)
+    if (!endDate.value) endDate.value = fmt(now)
+  }
+})
 
 // 当前报告数据
 const currentReport = ref(null)
@@ -591,6 +619,8 @@ const uploadAndAnalyze = async () => {
     const form = new FormData()
     form.append('file', file.value)
     form.append('auto_select', autoSelect.value ? 'true' : 'false')
+    form.append('period', period.value)
+    console.log(`📅 报告周期: ${period.value === 'month' ? '月度' : '年度'}`)
     
     // 添加时间范围参数
     if (startDate.value) {

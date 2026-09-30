@@ -154,6 +154,9 @@ EARLY_BIRD_HOURS = range(6, 9)
 # False：保留所有消息
 FILTER_BOT_MESSAGES = True
 
+# 机器人昵称关键词：昵称包含这些关键词的消息会被过滤（如 QQ 群机器人 Ononoki）
+BOT_NAME_KEYWORDS = ['ononoki', '食用指南']
+
 
 # ============================================
 # AI 功能配置（可选）
